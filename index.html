@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Maintenance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --text-main: #ffffff;
+            --text-dim: #555555;
+            --accent-blue: #32a6ff;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Центрированный контент */
+        .maintenance-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Анимация STOP.json вместо логотипа */
+        .stop-animation {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+
+        .status-title {
+            font-size: 22px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+
+        /* Минималистичный таймер */
+        .timer-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 48px;
+            font-weight: 400;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        .timer-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-top: 5px;
+        }
+
+        /* Полоска прогресса (опционально для стиля) */
+        .progress-line {
+            width: 40px;
+            height: 2px;
+            background: var(--accent-blue);
+            margin-top: 40px;
+            border-radius: 2px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="maintenance-container">
+    <div class="stop-animation">
+        <lottie-player src="STOP.json" background="transparent" speed="1" style="width: 100%; height: 100%;" loop autoplay></lottie-player>
+    </div>
+
+    <div class="status-title">Технические работы</div>
+
+    <div class="timer-display" id="countdown">12:00:00</div>
+    <div class="timer-label">До завершения</div>
+
+    <div class="progress-line"></div>
+</div>
+
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.setHeaderColor('#000000');
+    tg.setBackgroundColor('#000000');
+
+    // Настройка таймера на 12 часов с момента первого запуска
+    const DURATION = 12 * 60 * 60 * 1000; 
+
+    function startTimer() {
+        let endTime = localStorage.getItem('maint_end_timestamp');
+
+        if (!endTime) {
+            endTime = Date.now() + DURATION;
+            localStorage.setItem('maint_end_timestamp', endTime);
+        }
+
+        function update() {
+            const now = Date.now();
+            const diff = endTime - now;
+
+            if (diff <= 0) {
+                document.getElementById('countdown').innerText = "00:00:00";
+                return;
+            }
+
+            const h = Math.floor(diff / (1000 * 60 * 60));
+            const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('countdown').innerText = 
+                `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        update();
+        setInterval(update, 1000);
+    }
+
+    startTimer();
+</script>
+
+</body>
+</html>
