@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Upgrade · TON</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg-color: #000000;
+            --card-bg: #121212;
+            --status-blue: #32a6ff;
+            --btn-blue-dark: linear-gradient(180deg, #0f4b7a 0%, #062b4a 100%);
+            --btn-blue-light: linear-gradient(180deg, #32a6ff 0%, #0076d1 100%);
+            --text-main: #ffffff;
+            --text-dim: #888888;
+            --ton-blue: #0088cc;
+            --status-green: #2ecc71;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px 0 25px;
+            overflow-x: hidden;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- ГАРМОНИЧНАЯ ШАПКА --- */
+        .header-panel {
+            width: 90%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .back-button {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: 1px solid #222;
+            box-shadow: 0 4px 0 #111;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s;
+            user-select: none;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-button:active {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 #111;
+        }
+
+        .back-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-arrow svg {
+            width: 18px;
+            height: 18px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .balance-panel {
+            background: linear-gradient(145deg, #1e1e1e 0%, #0f0f0f 100%);
+            padding: 5px 5px 5px 16px;
+            border-radius: 60px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #2a2a2a;
+            box-shadow: 0 6px 0 #080808, inset 0 1px 0 rgba(255,255,255,0.05);
+            margin-right: 12px;
+        }
+
+        .ton-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--ton-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,136,204,0.3);
+        }
+
+        .ton-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .balance-amount {
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: -0.3px;
+            background: linear-gradient(180deg, #fff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-right: 4px;
+        }
+
+        /* --- ОСНОВНОЙ КОНТЕЙНЕР --- */
+        .app-container {
+            width: 92%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            flex-grow: 1;
+        }
+
+        .slots-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .slot-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .slot-label {
+            background: #1a1a1a;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .slot-box {
+            width: 100%;
+            aspect-ratio: 1.4;
+            background: #0a0a0a;
+            border: 1px dashed #333;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: border 0.2s;
+        }
+
+        .slot-box.selected {
+            border: 1px solid #444;
+            background: #0f0f0f;
+            box-shadow: 0 0 0 1px rgba(50,166,255,0.2);
+        }
+
+        .slot-content-full {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slot-content-full span {
+            font-size: 20px;
+            font-weight: 900;
+            color: #fff;
+        }
+
+        .slot-content-full lottie-player {
+            width: 65%;
+            height: 65%;
+        }
+
+        .plus-circle {
+            width: 32px;
+            height: 32px;
+            background: #1e1e1e;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #555;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .placeholder-text {
+            font-size: 11px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        /* КОЛЕСО */
+        .wheel-section {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -5px;
+            width: 18px;
+            height: 26px;
+            background: #ffc107;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 50;
+            border-radius: 2px;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+        }
+
+        .wheel-frame {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 12px solid #151515;
+            box-sizing: border-box;
+            z-index: 10;
+            box-shadow: inset 0 0 15px #000, 0 10px 20px rgba(0,0,0,0.6);
+        }
+
+        .wheel-outer {
+            width: 94%;
+            height: 94%;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+            will-change: transform;
+        }
+
+        #wheel-svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .wheel-center-static {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            background: #151515;
+            border-radius: 50%;
+            z-index: 20;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #2a2a2a;
+            box-shadow: inset 0 4px 8px #000, 0 4px 8px #000;
+        }
+
+        .percent-val {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--status-blue);
+            text-shadow: 0 0 10px rgba(50,166,255,0.5);
+        }
+
+        .chance-text {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--status-blue);
+            text-transform: uppercase;
+            margin-top: -5px;
+            letter-spacing: 1px;
+        }
+
+        /* КНОПКА UPGRADE */
+        .upgrade-btn {
+            width: 90%;
+            background: var(--btn-blue-dark);
+            color: #aaa;
+            border: none;
+            padding: 20px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: none;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 0 #041520;
+            border: 1px solid #1e3a5a;
+        }
+
+        .upgrade-btn:active:not(:disabled) {
+            transform: scale(0.97);
+            box-shadow: 0 2px 0 #041520;
+        }
+
+        .upgrade-btn.active-ready {
+            background: var(--btn-blue-light);
+            color: #fff;
+            box-shadow: 0 6px 0 #004a80;
+            border-color: #2a9eff;
+        }
+
+        .upgrade-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: 0 4px 0 #041520;
+        }
+
+        /* ИНВЕНТАРЬ */
+        .inventory-block {
+            width: 90%;
+            background: #0e0e0e;
+            border-radius: 24px;
+            border: 1px solid #262626;
+            padding: 16px;
+            margin-bottom: 20px;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: inset 0 2px 6px #000, 0 8px 0 #050505;
+        }
+
+        .inventory-title {
+            font-size: 18px;
+            font-weight: 900;
+            color: #32a6ff;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .inventory-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #151515;
+            border-radius: 18px;
+            padding: 10px 12px;
+            border: 1px solid #2c2c2c;
+        }
+
+        .inv-gift-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .inv-gift-icon {
+            width: 52px;
+            height: 52px;
+            background: #1e1e1e;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .inv-gift-name {
+            font-weight: 800;
+            font-size: 16px;
+            color: #f0f0f0;
+        }
+
+        .inv-gift-price {
+            color: #ffd966;
+            font-weight: 800;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #1f1a0e;
+            padding: 4px 10px;
+            border-radius: 30px;
+            border: 1px solid #3a321c;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .sell-btn {
+            border: none;
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 3px 0 #1a1a1a;
+            background: #ff9800;
+            color: #000;
+        }
+
+        .sell-btn:active {
+            transform: translateY(3px);
+            box-shadow: none;
+        }
+
+        /* ПАНЕЛИ */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.4s;
+            z-index: 100;
+            backdrop-filter: blur(8px);
+            will-change: opacity;
+        }
+
+        .bottom-sheet {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            background: #0f0f0f;
+            border-radius: 30px 30px 0 0;
+            border: none;
+            z-index: 101;
+            transition: 0.5s cubic-bezier(0.32, 1, 0.23, 1);
+            padding: 25px 20px;
+            box-sizing: border-box;
+            border-top: 1px solid #2a2a2a;
+            will-change: bottom;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .bottom-sheet.active {
+            bottom: 0;
+        }
+
+        .sheet-handle {
+            width: 45px;
+            height: 5px;
+            background: #333;
+            border-radius: 10px;
+            margin: 0 auto 25px;
+        }
+
+        .result-sheet {
+            text-align: center;
+        }
+
+        .result-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-title {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 10px;
+        }
+
+        .btn-confirm {
+            width: 100%;
+            padding: 18px;
+            border-radius: 18px;
+            border: none;
+            font-weight: 900;
+            font-size: 16px;
+            background: #1a1a1a;
+            color: #fff;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #0a0a0a;
+        }
+
+        #amount-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid #2a2a2a;
+            color: #fff;
+            font-size: 45px;
+            font-weight: 900;
+            text-align: center;
+            outline: none;
+            margin-bottom: 25px;
+        }
+
+        .gifts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        .gift-item {
+            background: #151515;
+            border: 1px solid #262626;
+            border-radius: 18px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .gift-item:active {
+            background: #1f1f1f;
+        }
+
+        .gift-icon-container {
+            width: 100%;
+            aspect-ratio: 1.1;
+            background: #0d0d0d;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            border: 1px solid #2a2a2a;
+        }
+
+        .gift-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #eee;
+            margin-bottom: 8px;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .gift-bottom-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .gift-price-btn {
+            background: #ffd900;
+            color: #000;
+            flex-grow: 1;
+            border-radius: 10px;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            font-size: 14px;
+            font-weight: 900;
+        }
+
+        .gift-cart-btn {
+            background: #1f1f1f;
+            min-width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* КАСТОМНОЕ УВЕДОМЛЕНИЕ */
+        .custom-toast {
+            position: fixed;
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 2000;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.8);
+            transition: top 0.4s cubic-bezier(0.32, 1, 0.23, 1);
+            pointer-events: none;
+            width: 85%;
+            text-align: center;
+        }
+        .custom-toast.show {
+            top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="custom-toast" class="custom-toast"></div>
+
+    <div class="header-panel">
+        <div class="back-button" onclick="window.location.href='index.html'">
+            <span class="back-arrow">
+                <svg viewBox="0 0 24 24">
+                    <path d="M15 18l-6-6 6-6"/>
+                </svg>
+            </span>
+            <span>Назад</span>
+        </div>
+        <div class="balance-panel">
+            <div class="ton-icon"><img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png" alt="TON"></div>
+            <div class="balance-amount" id="user-balance">0.00</div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="slots-row">
+            <div class="slot-wrapper">
+                <div class="slot-label">Твой подарок</div>
+                <div class="slot-box" id="bet-box" onclick="openBetSheet()">
+                    <div id="bet-inner" class="slot-content-full">
+                        <div class="plus-circle">+</div>
+                        <div class="placeholder-text">Выберите подарок</div>
+                    </div>
+                </div>
+            </div>
+            <div style="font-size: 24px; color: #333; font-weight: 900;">»</div>
+            <div class="slot-wrapper">
+                <div class="slot-label">Желаемый подарок</div>
+                <div class="slot-box" id="gift-box" onclick="openGiftSheet()">
+                    <div id="gift-inner" class="slot-content-full">
+                        <div class="plus-circle">+</div>
+                        <div class="placeholder-text">Выберите подарок</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wheel-section">
+            <div class="wheel-pointer"></div>
+            <div class="wheel-frame"></div>
+            <div class="wheel-center-static">
+                <div class="percent-val" id="percent-display">0%</div>
+                <div class="chance-text" id="status-display">НИЗКИЙ</div>
+            </div>
+            <div class="wheel-outer" id="wheel-body">
+                <svg id="wheel-svg" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="49" fill="#0a0a0a" />
+                    <circle id="chance-arc" cx="50" cy="50" r="25" fill="none" stroke="var(--status-blue)" stroke-width="50" stroke-dasharray="0 158" transform="rotate(-90 50 50)"/>
+                    <g id="wheel-spokes" stroke="#000" stroke-width="0.4"></g>
+                </svg>
+            </div>
+        </div>
+
+        <button class="upgrade-btn" id="main-upgrade-btn" onclick="startSpin()" disabled>Улучшить подарок</button>
+
+        <div id="inventory-block" class="inventory-block">
+            <div class="inventory-title">🎁 ИНВЕНТАРЬ</div>
+            <div id="inventory-content"></div>
+        </div>
+    </div>
+
+    <div class="overlay" id="main-overlay" onclick="closeAllSheets()"></div>
+    <div class="bottom-sheet" id="bet-sheet">
+        <div class="sheet-handle"></div>
+        <input type="number" id="amount-input" placeholder="0 TON" step="0.01" min="0.01">
+        <button class="btn-confirm" style="background: var(--status-blue); color: #fff;" onclick="applyBet()">ПОДТВЕРДИТЬ</button>
+    </div>
+    <div class="bottom-sheet" id="gift-sheet" style="height: 70%;">
+        <div class="sheet-handle"></div>
+        <div class="gifts-grid" id="gifts-container"></div>
+    </div>
+    <div class="bottom-sheet result-sheet" id="result-sheet">
+        <div class="sheet-handle"></div>
+        <div class="result-icon" id="res-icon"></div>
+        <div class="result-title" id="res-title">УСПЕХ!</div>
+        <div class="result-desc" id="res-desc" style="color: #888; margin-bottom: 30px;"></div>
+        <button class="btn-confirm" onclick="closeAllSheets()">ПОНЯТНО</button>
+    </div>
+
+    <script>
+        (function(){
+            // НАСТРОЙКА ЦВЕТА ШАПКИ TELEGRAM WEB APP
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tg = window.Telegram.WebApp;
+                tg.ready();
+                tg.setHeaderColor('#000000');
+                tg.setBackgroundColor('#000000');
+            }
+
+            const wheelBody = document.getElementById('wheel-body');
+            const chanceArc = document.getElementById('chance-arc');
+            const upgradeBtn = document.getElementById('main-upgrade-btn');
+            const spokesGroup = document.getElementById('wheel-spokes');
+            
+            let currentBet = 0;
+            let selectedGift = null;
+            let isSpinning = false;
+            let balance = 0.00;
+
+            let globalStats = JSON.parse(localStorage.getItem('upgrade_stats')) || {
+                totalGames: 0,
+                totalWins: 0,
+                giftWins: {},
+                giftAttempts: {},
+                consecutiveLosses: 0
+            };
+
+            let inventory = JSON.parse(localStorage.getItem('gift_inventory')) || [];
+
+            const savedBalance = localStorage.getItem('user_ton_balance');
+            if (savedBalance && !isNaN(parseFloat(savedBalance))) balance = parseFloat(savedBalance);
+            updateBalanceUI();
+
+            for (let i = 0; i < 360; i += 4) {
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                const rad = i * Math.PI / 180;
+                line.setAttribute("x1", 50);
+                line.setAttribute("y1", 50);
+                line.setAttribute("x2", 50 + 50 * Math.cos(rad));
+                line.setAttribute("y2", 50 + 50 * Math.sin(rad));
+                spokesGroup.appendChild(line);
+            }
+
+            const giftsData = [
+                { id: 4, name: "Rocket", price: 1.3 },
+                { id: 2, name: "Desk Calendar", price: 6.25 },
+                { id: 3, name: "Big Year", price: 3.9 },
+                { id: 1, name: "Gift Box", price: 1.8 },
+                { id: 5, name: "Instant Ramen", price: 3.1 },
+                { id: 6, name: "Bear", price: 0.3 },
+                { id: 9, name: "Snoop Dogg", price: 6.12 },
+                { id: 10, name: "Snoop Cigar", price: 16.9 },
+                { id: 11, name: "Moon Pendant", price: 6.18 },
+                { id: 12, name: "Light Sword", price: 5.95 },
+                { id: 13, name: "Toy Bear", price: 78.5 },
+                { id: 14, name: "Diamond Ring", price: 32.6 },
+                { id: 15, name: "Loot Bag", price: 269 },
+                { id: 16, name: "Star Notepad", price: 4.9 },
+                { id: 17, name: "Swiss Watch", price: 92 },
+                { id: 18, name: "Perfume Bottle", price: 92.3 },
+                { id: 19, name: "Vintage Cigar", price: 38 },
+                { id: 20, name: "Electric Skull", price: 47.4 },
+                { id: 21, name: "Hypno Lollipop", price: 4.87 },
+                { id: 22, name: "Evil Eye", price: 6.41 },
+                { id: 23, name: "Which Hat", price: 6.67 },
+                { id: 24, name: "Scared Cat", price: 197.87 },
+                { id: 25, name: "Fresh Socks", price: 3.21 },
+                { id: 26, name: "Mood Pack", price: 3.11 },
+                { id: 27, name: "Timeless Book", price: 4.87 },
+                { id: 28, name: "Chill Flame", price: 5.43 },
+                { id: 29, name: "Ice Cream", price: 2.99 },
+                { id: 30, name: "Input Key", price: 3.11 },
+                { id: 31, name: "B-Day Candle", price: 5.43 },
+                { id: 32, name: "Khabib's Papakma", price: 329.12 },
+                { id: 33, name: "Lol Pop", price: 3.97 },
+                { id: 34, name: "Happy Brownie", price: 4.22 },
+                { id: 35, name: "Plush Pepe", price: 7799 },
+                { id: 36, name: "Precious Peach", price: 362.65 }
+            ];
+
+            function updateBalanceUI() {
+                document.getElementById('user-balance').innerText = balance.toFixed(2);
+                localStorage.setItem('user_ton_balance', balance.toFixed(2));
+            }
+
+            function openBetSheet() {
+                document.getElementById('main-overlay').classList.add('active');
+                document.getElementById('bet-sheet').classList.add('active');
+            }
+
+            function openGiftSheet() {
+                document.getElementById('main-overlay').classList.add('active');
+                document.getElementById('gift-sheet').classList.add('active');
+            }
+
+            function closeAllSheets() {
+                document.getElementById('main-overlay').classList.remove('active');
+                document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('active'));
+            }
+
+            function applyBet() {
+                let val = parseFloat(document.getElementById('amount-input').value);
+                if (isNaN(val) || val <= 0) return;
+                if (val > balance) return;
+                currentBet = val;
+                document.getElementById('bet-box').classList.add('selected');
+                document.getElementById('bet-inner').innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div class="ton-icon" style="width: 24px; height: 24px;"><img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png"></div>
+                        <span style="font-size: 20px; font-weight: 900; color: #fff;">${currentBet.toFixed(2)}</span>
+                    </div>
+                `;
+                // Сбрасываем подарок, если он стал меньше или равен ставке
+                if (selectedGift && selectedGift.price <= currentBet) {
+                    selectedGift = null;
+                    document.getElementById('gift-box').classList.remove('selected');
+                    document.getElementById('gift-inner').innerHTML = `
+                        <div class="plus-circle">+</div>
+                        <div class="placeholder-text">Выберите подарок</div>
+                    `;
+                }
+                updateChance();
+                closeAllSheets();
+            }
+
+            // ФУНКЦИЯ КАСТОМНОГО УВЕДОМЛЕНИЯ
+            function showToast(message) {
+                const toast = document.getElementById('custom-toast');
+                toast.innerText = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            function selectGift(id, name, price) {
+                if (currentBet > 0 && price <= currentBet) {
+                    showToast("Нельзя выбирать подарок стоимостью меньше или равной вашей ставке.");
+                    return;
+                }
+                selectedGift = { id, name, price };
+                document.getElementById('gift-box').classList.add('selected');
+                document.getElementById('gift-inner').innerHTML = `<lottie-player src="${id}.json" renderer="svg" loop autoplay></lottie-player>`;
+                updateChance();
+                closeAllSheets();
+            }
+
+            function updateChance() {
+                if (!currentBet || !selectedGift) {
+                    document.getElementById('percent-display').innerText = "0%";
+                    chanceArc.style.strokeDasharray = `0 158`;
+                    upgradeBtn.disabled = true;
+                    upgradeBtn.classList.remove('active-ready');
+                    return;
+                }
+                
+                let chance = Math.round((currentBet / selectedGift.price) * 100);
+                if (chance >= 100) chance = 99; 
+                
+                const circumference = 2 * Math.PI * 25;
+                const arcLength = (circumference * chance) / 100;
+                chanceArc.style.strokeDasharray = `${arcLength} ${circumference}`;
+                const startOffset = -(chance * 3.6) / 2;
+                let currentRot = parseFloat(wheelBody.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
+                let mod = currentRot % 360;
+                wheelBody.style.transition = 'none';
+                wheelBody.style.transform = `rotate(${mod}deg)`;
+                void wheelBody.offsetWidth;
+                let target = startOffset;
+                if (target - mod > 180) target -= 360;
+                else if (mod - target > 180) target += 360;
+                wheelBody.style.transition = "transform 1.5s ease-in-out";
+                wheelBody.style.transform = `rotate(${target}deg)`;
+                document.getElementById('percent-display').innerText = chance + "%";
+                const statusDisplay = document.getElementById('status-display');
+                if(chance < 30) statusDisplay.innerText = "НИЗКИЙ";
+                else if(chance < 70) statusDisplay.innerText = "СРЕДНИЙ";
+                else statusDisplay.innerText = "ВЫСОКИЙ";
+                upgradeBtn.disabled = false;
+                upgradeBtn.classList.add('active-ready');
+            }
+
+            function renderGifts() {
+                const sortedGifts = [...giftsData].sort((a, b) => a.price - b.price);
+                document.getElementById('gifts-container').innerHTML = sortedGifts.map(gift => `
+                    <div class="gift-item" onclick="selectGift(${gift.id}, '${gift.name}', ${gift.price})">
+                        <div class="gift-icon-container">
+                            <lottie-player src="${gift.id}.json" renderer="svg" loop autoplay style="width: 75%; height: 75%;"></lottie-player>
+                        </div>
+                        <div class="gift-name">${gift.name}</div>
+                        <div class="gift-bottom-row">
+                            <div class="gift-price-btn">
+                                <div style="width: 14px; height: 14px; background: var(--ton-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden;"><img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                                ${gift.price}
+                            </div>
+                            <div class="gift-cart-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2.5"><path d="M9 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/><path d="M20 20a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            renderGifts();
+
+            function saveInventory() {
+                localStorage.setItem('gift_inventory', JSON.stringify(inventory));
+            }
+
+            function renderInventory() {
+                const invBlock = document.getElementById('inventory-block');
+                const invContent = document.getElementById('inventory-content');
+                if (inventory.length === 0) {
+                    invBlock.style.display = 'none';
+                    return;
+                }
+                invBlock.style.display = 'flex';
+                let html = '';
+                inventory.forEach((gift, index) => {
+                    html += `
+                        <div class="inventory-item">
+                            <div class="inv-gift-info">
+                                <div class="inv-gift-icon">
+                                    <lottie-player src="${gift.id}.json" renderer="svg" loop autoplay style="width: 100%; height: 100%;"></lottie-player>
+                                </div>
+                                <div>
+                                    <div class="inv-gift-name">${gift.name}</div>
+                                    <div class="inv-gift-price">
+                                        <img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png" style="width: 14px;"> ${gift.price}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="item-actions">
+                                <button class="sell-btn" onclick="sellGift(${index})">Продать</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                invContent.innerHTML = html;
+            }
+
+            window.sellGift = function(index) {
+                if (index >= 0 && index < inventory.length) {
+                    const gift = inventory[index];
+                    balance += gift.price;
+                    updateBalanceUI();
+                    inventory.splice(index, 1);
+                    saveInventory();
+                    renderInventory();
+                    showResultMessage(true, true, gift);
+                }
+            };
+
+            function showResultMessage(win, isSale = false, saleGift = null) {
+                const sheet = document.getElementById('result-sheet');
+                const icon = document.getElementById('res-icon');
+                const title = document.getElementById('res-title');
+                const desc = document.getElementById('res-desc');
+                
+                if (isSale) {
+                    title.innerText = "ПРОДАНО!";
+                    title.style.color = "#ffd966";
+                    icon.innerHTML = `<lottie-player src="ton.json" renderer="svg" loop autoplay style="width:100px;"></lottie-player>`;
+                    desc.innerText = `Вы продали ${saleGift.name} и получили ${saleGift.price} TON.`;
+                } else if (win) {
+                    title.innerText = "УСПЕХ!";
+                    title.style.color = "#00e676";
+                    icon.innerHTML = `<lottie-player src="win.json" renderer="svg" loop autoplay style="width:120px;"></lottie-player>`;
+                    desc.innerText = `Вы получили ${selectedGift.name}! Предмет в инвентаре.`;
+                } else {
+                    title.innerText = "ПРОИГРЫШ";
+                    title.style.color = "#ff4c4c";
+                    icon.innerHTML = `<lottie-player src="lock.json" renderer="svg" loop autoplay style="width:100px;"></lottie-player>`;
+                    desc.innerText = `Предмет сломался. Ставка списана.`;
+                }
+                
+                closeAllSheets();
+                document.getElementById('main-overlay').classList.add('active');
+                sheet.classList.add('active');
+            }
+
+            window.startSpin = function() {
+                if(isSpinning) return;
+                if(!currentBet || !selectedGift) return;
+                if(currentBet > balance) return;
+
+                isSpinning = true;
+                upgradeBtn.disabled = true;
+
+                balance -= currentBet;
+                updateBalanceUI();
+
+                const win = false; 
+                
+                let chance = Math.round((currentBet / selectedGift.price) * 100);
+                if (chance >= 100) chance = 99; 
+                
+                const arcWidth = chance * 3.6;
+                const currentRot = parseFloat(wheelBody.style.transform.replace('rotate(', '').replace('deg)', '')) || 0;
+                const spins = 5 * 360;
+                const baseRot = Math.floor(currentRot / 360) * 360;
+                let targetMod;
+                
+                if (Math.random() < 0.5) {
+                    targetMod = 360 - arcWidth - (0.5 + Math.random() * 2);
+                } else {
+                    targetMod = 360 + (0.5 + Math.random() * 2);
+                }
+                
+                const targetRotation = baseRot + spins + targetMod;
+                wheelBody.style.transition = "transform 2.5s cubic-bezier(0.1, 0.9, 0.2, 1)";
+                wheelBody.style.transform = `rotate(${targetRotation}deg)`;
+
+                setTimeout(() => {
+                    if (win) {
+                        inventory.push({...selectedGift});
+                        saveInventory();
+                        renderInventory();
+                        showResultMessage(true);
+                    } else {
+                        showResultMessage(false);
+                    }
+                    
+                    isSpinning = false;
+                    if(currentBet && selectedGift) {
+                        upgradeBtn.disabled = false;
+                        upgradeBtn.classList.add('active-ready');
+                    } else {
+                        upgradeBtn.disabled = true;
+                        upgradeBtn.classList.remove('active-ready');
+                    }
+                }, 2600);
+            };
+
+            renderInventory();
+
+            window.openBetSheet = openBetSheet;
+            window.openGiftSheet = openGiftSheet;
+            window.closeAllSheets = closeAllSheets;
+            window.applyBet = applyBet;
+            window.selectGift = selectGift;
+        })();
+    </script>
+</body>
+</html>

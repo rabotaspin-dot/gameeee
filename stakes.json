@@ -1,0 +1,11 @@
+{
+  "available_stakes": [
+    { "type": "text", "value": "💎 1.5" },
+    { "type": "text", "value": "💎 5.0" },
+    { "type": "text", "value": "💎 12.4" },
+    { "type": "gift", "value": "gift_star.json" },
+    { "type": "gift", "value": "gift_fire.json" },
+    { "type": "gift", "value": "gift_heart.json" },
+    { "type": "text", "value": "💎 25.0" }
+  ]
+}

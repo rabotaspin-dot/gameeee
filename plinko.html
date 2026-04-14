@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Plinko TON</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<style>
+:root {
+    --bg-color: #050505;
+    --card-bg: #121212;
+    --accent-blue: #32a6ff;
+    --blue-gradient: linear-gradient(180deg, #32a6ff 0%, #0076d1 100%);
+    --dark-blue: #1a2a40;
+    --text-main: #ffffff;
+    --text-dim: #888888;
+    --ton-blue: #0088cc;
+    --status-green: #2ecc71;
+    --error-red: #ff4b4b; 
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background: #000;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 0;
+    -webkit-user-select: none;
+    user-select: none;
+    overflow-x: hidden;
+}
+
+#notification {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 12px 20px;
+    border-radius: 16px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: top 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    min-width: 280px;
+}
+.note-icon {
+    width: 24px;
+    height: 24px;
+    background: var(--error-red);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 14px;
+}
+
+.header-panel {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.back-button {
+    background: rgba(255,255,255,0.05);
+    padding: 8px 16px;
+    border-radius: 40px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    border: 1px solid #222;
+    box-shadow: 0 4px 0 #111;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s;
+}
+
+.online-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.05);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-dim);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--status-green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--status-green);
+}
+
+.balance-panel {
+    background: #111;
+    padding: 4px 4px 4px 12px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #222;
+}
+
+.ton-icon {
+    width: 24px;
+    height: 24px;
+    background: var(--ton-blue);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.ton-icon img { width: 100%; height: 100%; object-fit: cover; }
+.balance-amount { font-weight: 800; font-size: 16px; }
+
+.add-funds-btn {
+    width: 34px;
+    height: 34px;
+    background: var(--blue-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.container {
+    width: 100%;
+    max-width: 460px;
+    padding: 12px;
+}
+
+.board {
+    background: #050505;
+    border-radius: 20px;
+    padding: 120px 10px 80px;
+    position: relative;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+    overflow: hidden;
+}
+
+@keyframes moveDropper {
+    0% { left: 25%; }
+    50% { left: 75%; }
+    100% { left: 25%; }
+}
+
+.dropper {
+    width: 100px;
+    height: 40px;
+    background: #007aff;
+    border-radius: 10px;
+    position: absolute;
+    top: 20px;
+    transform: translateX(-50%);
+    animation: moveDropper 4s ease-in-out infinite;
+    z-index: 5;
+}
+
+.dropper:after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 20px;
+    background: #0056b3;
+    border-radius: 6px;
+}
+
+.grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+}
+
+.row {
+    display: flex;
+    gap: 16px;
+}
+
+.peg {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #007aff;
+}
+
+.ball {
+    width: 10px;
+    height: 10px;
+    background: #fff;
+    border-radius: 50%;
+    position: absolute;
+    z-index: 10;
+    pointer-events: none;
+    box-shadow: 0 0 5px #fff;
+}
+
+.multiplier-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    background: linear-gradient(to top, #001a33, transparent);
+    padding: 10px 0;
+}
+
+.multiplier {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    color: #fff;
+    border-left: 1px solid rgba(255,255,255,0.1);
+    transition: 0.2s;
+}
+
+.play-btn {
+    margin-top: 15px;
+    width: 100%;
+    background: #007aff;
+    color: #fff;
+    border: none;
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.play-btn.active {
+    opacity: 1;
+}
+
+.bet-box {
+    margin-top: 20px;
+    background: #0a0a0a;
+    border-radius: 20px;
+    padding: 16px;
+}
+
+.bet-header {
+    display: flex;
+    justify-content: space-between;
+    color: #aaa;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.bet-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.bet-buttons button {
+    flex: 1;
+    background: #111;
+    border: none;
+    color: #fff;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.bet-buttons button.selected {
+    background: #001a33;
+    border: 1px solid #007aff;
+}
+
+.total {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.total input {
+    font-size: 40px;
+    color: #444;
+    font-weight: 300;
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    width: 120px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.overlay.show { opacity: 1; pointer-events: all; }
+
+.bottom-sheet {
+    position: fixed;
+    bottom: -45%; left: 50%;
+    transform: translateX(-50%);
+    width: 100%; max-width: 460px;
+    height: 45%;
+    background: #0a0a0a;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    z-index: 101;
+    transition: bottom 0.4s ease-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 20px;
+}
+.bottom-sheet.show { bottom: 0; }
+#lottie-container { width: 120px; height: 120px; margin-bottom: 20px; }
+.result-amount { font-size: 40px; color: #444; font-weight: 300; margin-bottom: auto; }
+.btn-close-sheet {
+    width: 100%;
+    background: #007aff;
+    color: #fff;
+    border: none;
+    padding: 16px;
+    font-size: 18px;
+    border-radius: 14px;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div id="notification">
+    <div class="note-icon">!</div>
+    <div id="note-text" style="font-weight: 600; font-size: 14px;">Недостаточно средств</div>
+</div>
+
+<div class="header-panel">
+    <div class="back-button" onclick="window.location.href='index.html'">
+        <span class="back-arrow">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 18l-6-6 6-6"/>
+            </svg>
+        </span>
+        <span>Назад</span>
+    </div>
+    <div class="online-indicator">
+        <div class="dot"></div>
+        <span id="online-count">6</span>
+    </div>
+    <div class="balance-panel">
+        <div class="ton-icon">
+            <img src="https://i.ibb.co/wrRvxTzd/Gram-cryptocurrency-logo-svg.png" alt="TON">
+        </div>
+        <div class="balance-amount" id="header-balance">0.00</div>
+        <div class="add-funds-btn" onclick="showNotification('Пополнение доступно в главном меню')">+</div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="board" id="board">
+        <div class="dropper" id="dropper"></div>
+        <div class="grid" id="grid"></div>
+        <div class="multiplier-bar">
+            <div class="multiplier">💀</div>
+            <div class="multiplier">x0.7</div>
+            <div class="multiplier">x1.2</div>
+            <div class="multiplier">x1.5</div>
+            <div class="multiplier">x2.5</div>
+            <div class="multiplier">x1.5</div>
+            <div class="multiplier">x1.2</div>
+            <div class="multiplier">x0.7</div>
+            <div class="multiplier">💀</div>
+        </div>
+    </div>
+
+    <button class="play-btn" id="playBtn" onclick="dropBalls()" disabled>Играть</button>
+
+    <div class="bet-box">
+        <div class="bet-header">
+            <span>Сумма ставки</span>
+            <span id="display-available">Доступно: 0.00 TON</span>
+        </div>
+        <div class="bet-buttons" id="betGroup">
+            <button onclick="selectBet(this, 1)">1</button>
+            <button onclick="selectBet(this, 5)">5</button>
+            <button onclick="selectBet(this, 10)">10</button>
+            <button onclick="selectBet(this, 25)">25</button>
+        </div>
+        <div class="total">
+            <input type="number" id="betInput" step="any" value="0" min="0" placeholder="0">
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeResult()"></div>
+<div class="bottom-sheet" id="bottomSheet">
+    <div id="lottie-container"></div>
+    <div class="result-amount" id="resultAmount">0 TON</div>
+    <button class="btn-close-sheet" onclick="closeResult()">Понятно</button>
+</div>
+
+<script>
+// Покраска системной шапки в черный цвет
+window.Telegram.WebApp.setHeaderColor('#000000');
+
+// --- ЛОГИКА УВЕДОМЛЕНИЙ ---
+function showNotification(text) {
+    const note = document.getElementById('notification');
+    const noteText = document.getElementById('note-text');
+    noteText.innerText = text;
+    note.style.top = '20px';
+    setTimeout(() => { note.style.top = '-100px'; }, 3000);
+}
+
+// --- СИНХРОНИЗАЦИЯ БАЛАНСА (НАЧАЛО С 0) ---
+let userBalance = parseFloat(localStorage.getItem('user_ton_balance')) || 0.00;
+const balanceEl = document.getElementById('header-balance');
+const availableEl = document.getElementById('display-available');
+
+function updateBalanceUI() {
+    balanceEl.innerText = userBalance.toFixed(2);
+    availableEl.innerText = `Доступно: ${userBalance.toFixed(2)} TON`;
+    localStorage.setItem('user_ton_balance', userBalance.toFixed(2));
+}
+updateBalanceUI();
+
+// Фейковый онлайн
+setInterval(() => {
+    const el = document.getElementById('online-count');
+    let current = parseInt(el.innerText);
+    let change = Math.random() > 0.5 ? 1 : -1;
+    let next = current + change;
+    if (next < 2) next = 2;
+    if (next > 12) next = 12;
+    el.innerText = next;
+}, 5000);
+
+// --- ЛОГИКА ПЛИНКО ---
+const grid = document.getElementById("grid");
+const dropper = document.getElementById("dropper");
+const board = document.getElementById("board");
+const playBtn = document.getElementById("playBtn");
+const betInput = document.getElementById("betInput");
+
+let currentBet = 0;
+let activeBalls = 0;
+let totalWin = 0;
+let anim;
+let playCount = parseInt(localStorage.getItem('plinko_plays_count')) || 0;
+
+document.addEventListener("DOMContentLoaded", () => {
+    anim = lottie.loadAnimation({
+        container: document.getElementById('lottie-container'),
+        renderer: 'svg',
+        loop: true,
+        autoplay: false,
+        path: 'plinko.json'
+    });
+});
+
+for (let i = 1; i <= 11; i++) {
+    const row = document.createElement("div");
+    row.className = "row";
+    for (let j = 0; j < i + 2; j++) {
+        const peg = document.createElement("div");
+        peg.className = "peg";
+        row.appendChild(peg);
+    }
+    grid.appendChild(row);
+}
+
+function selectBet(btn, value) {
+    document.querySelectorAll('#betGroup button').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    currentBet = value;
+    betInput.value = value;
+    playBtn.disabled = false;
+    playBtn.classList.add('active');
+}
+
+betInput.addEventListener("input", function() {
+    document.querySelectorAll('#betGroup button').forEach(b => b.classList.remove('selected'));
+    currentBet = parseFloat(this.value) || 0;
+    if (currentBet > 0) {
+        playBtn.disabled = false;
+        playBtn.classList.add('active');
+    } else {
+        playBtn.disabled = true;
+        playBtn.classList.remove('active');
+    }
+});
+
+function spawnBall() {
+    const ball = document.createElement("div");
+    ball.className = "ball";
+    board.appendChild(ball);
+
+    const bRect = board.getBoundingClientRect();
+    const dRect = dropper.getBoundingClientRect();
+    const pegEls = document.querySelectorAll('.peg');
+
+    let x = (dRect.left - bRect.left) + (dRect.width / 2) - 5;
+    let y = (dRect.bottom - bRect.top);
+    let vx = (Math.random() - 0.5) * 1.5;
+    let vy = 0;
+    const gravity = 0.18;
+
+    function loop() {
+        vy += gravity;
+        x += vx;
+        y += vy;
+        vx *= 0.99;
+
+        // ПРОВЕРКА КОЛЛИЗИЙ
+        pegEls.forEach(peg => {
+            const pRect = peg.getBoundingClientRect();
+            const px = (pRect.left - bRect.left) + 3;
+            const py = (pRect.top - bRect.top) + 3;
+            const dx = x + 5 - px;
+            const dy = y + 5 - py;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 8) {
+                const angle = Math.atan2(dy, dx);
+                const speed = Math.sqrt(vx * vx + vy * vy) || 2;
+                vx = Math.cos(angle) * speed * 0.7;
+                vy = Math.sin(angle) * speed * 0.7;
+                vy += 0.5; 
+            }
+        });
+
+        if (x < 0 || x > board.offsetWidth - 10) vx *= -0.5;
+
+        ball.style.left = x + "px";
+        ball.style.top = y + "px";
+
+        if (y > board.offsetHeight - 25) {
+            const slots = document.querySelectorAll(".multiplier");
+            const index = Math.floor((x / board.offsetWidth) * slots.length);
+            const slot = slots[Math.max(0, Math.min(slots.length - 1, index))];
+
+            let multiplier = 1;
+            const text = slot.textContent.trim();
+            if (text === "💀") multiplier = 0.1;
+            else multiplier = parseFloat(text.replace("x", "")) || 1;
+
+            totalWin += (currentBet * multiplier) / 8;
+            ball.remove();
+            activeBalls--;
+
+            if (activeBalls === 0) {
+                // СИСТЕМА СТАВОК И ОКУПАЕМОСТИ
+                if (playCount === 1) {
+                    // Первая ставка: выигрыш 4.8 - 5.2 при ставке 4 (примерно +20-30%)
+                    totalWin = currentBet * (1.2 + Math.random() * 0.1);
+                } else if (playCount === 2) {
+                    // Вторая ставка: казино в нуле или небольшом плюсе (0.7 - 0.9)
+                    totalWin = currentBet * (0.7 + Math.random() * 0.2);
+                } else {
+                    // Обычный режим: казино всегда в плюсе (RTP ~85%)
+                    if (totalWin > currentBet) {
+                        totalWin = currentBet * (0.6 + Math.random() * 0.3);
+                    }
+                }
+                
+                userBalance += totalWin;
+                updateBalanceUI();
+                showResult(totalWin);
+            }
+            return;
+        }
+        requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+}
+
+function dropBalls() {
+    if (currentBet <= 0) return;
+    if (currentBet > userBalance) {
+        showNotification('Недостаточно средств');
+        return;
+    }
+
+    userBalance -= currentBet;
+    updateBalanceUI();
+
+    playCount++;
+    localStorage.setItem('plinko_plays_count', playCount);
+    
+    playBtn.disabled = true;
+    playBtn.classList.remove('active');
+    totalWin = 0;
+    activeBalls = 0;
+    
+    for (let i = 0; i < 8; i++) {
+        activeBalls++;
+        setTimeout(spawnBall, i * 350);
+    }
+}
+
+function showResult(amount) {
+    document.getElementById("resultAmount").innerText = amount.toFixed(2) + " TON";
+    document.getElementById("overlay").classList.add("show");
+    document.getElementById("bottomSheet").classList.add("show");
+    if (anim) anim.play();
+}
+
+function closeResult() {
+    document.getElementById("overlay").classList.remove("show");
+    document.getElementById("bottomSheet").classList.remove("show");
+    if (anim) anim.stop();
+    if (currentBet > 0) {
+        playBtn.disabled = false;
+        playBtn.classList.add('active');
+    }
+}
+</script>
+</body>
+</html>

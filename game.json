@@ -1,0 +1,9 @@
+{
+  "scenarios": [
+    { "time_seconds": 0.5, "description": "Early joiner" },
+    { "time_seconds": 1.2, "description": "Second wave" },
+    { "time_seconds": 2.1, "description": "Middle joiner" },
+    { "time_seconds": 3.4, "description": "Pre-start joiner" },
+    { "time_seconds": 4.2, "description": "Last second bet" }
+  ]
+}
